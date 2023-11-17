@@ -154,7 +154,7 @@ NT_EXPR:
   NT_EXPR_L {
     $$ = $1;
   }
-| NT_EXPR_L NT_EXPR
+| NT_EXPR NT_EXPR_L
   {
     $$ = TFunApp($1, $2);
   }
