@@ -36,7 +36,6 @@ void * none;
 %type <e> NT_EXPR
 // Priority
 %right TM_LAMBDA
-%right TM_COLON
 %nonassoc TM_ASGNOP
 %left TM_OR
 %left TM_AND
@@ -145,7 +144,7 @@ NT_EXPR_L:
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_OR), $1), $3));
   }
-| TM_LAMBDA TM_IDENT TM_COLON NT_EXPR_L
+| TM_LAMBDA TM_IDENT TM_COLON NT_EXPR
   {
     $$ = TFunAbs($2, $4);
   }
