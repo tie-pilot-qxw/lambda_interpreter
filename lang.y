@@ -32,7 +32,7 @@ void * none;
 %type <e> NT_WHOLE
 %type <e> NT_EXPR0
 %type <e> NT_EXPR1
-%type <e> NT_EXPR_L
+%type <e> NT_EXPR_R
 %type <e> NT_EXPR
 // Priority
 %right TM_LAMBDA
@@ -87,60 +87,60 @@ NT_EXPR1:
 ;
 
 
-NT_EXPR_L:
+NT_EXPR_R:
   NT_EXPR1
   {
     $$ = ($1);
   }
-| NT_EXPR_L TM_MUL NT_EXPR_L
+| NT_EXPR_R TM_MUL NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_MUL), $1), $3));
   }
-| NT_EXPR_L TM_PLUS NT_EXPR_L
+| NT_EXPR_R TM_PLUS NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_PLUS), $1), $3));
   }
-| NT_EXPR_L TM_MINUS NT_EXPR_L
+| NT_EXPR_R TM_MINUS NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_MINUS), $1), $3));
   }
-| NT_EXPR_L TM_DIV NT_EXPR_L
+| NT_EXPR_R TM_DIV NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_DIV), $1), $3));
   }
-| NT_EXPR_L TM_MOD NT_EXPR_L
+| NT_EXPR_R TM_MOD NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_MOD), $1), $3));
   }
-| NT_EXPR_L TM_LT NT_EXPR_L
+| NT_EXPR_R TM_LT NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_LT), $1), $3));
   }
-| NT_EXPR_L TM_GT NT_EXPR_L
+| NT_EXPR_R TM_GT NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_GT), $1), $3));
   }
-| NT_EXPR_L TM_LE NT_EXPR_L
+| NT_EXPR_R TM_LE NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_LE), $1), $3));
   }
-| NT_EXPR_L TM_GE NT_EXPR_L
+| NT_EXPR_R TM_GE NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_GE), $1), $3));
   }
-| NT_EXPR_L TM_EQ NT_EXPR_L
+| NT_EXPR_R TM_EQ NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_EQ), $1), $3));
   }
-| NT_EXPR_L TM_NE NT_EXPR_L
+| NT_EXPR_R TM_NE NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_NE), $1), $3));
   }
-| NT_EXPR_L TM_AND NT_EXPR_L
+| NT_EXPR_R TM_AND NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_AND), $1), $3));
   }
-| NT_EXPR_L TM_OR NT_EXPR_L
+| NT_EXPR_R TM_OR NT_EXPR_R
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_OR), $1), $3));
   }
@@ -151,10 +151,10 @@ NT_EXPR_L:
 ;
 
 NT_EXPR:
-  NT_EXPR_L {
+  NT_EXPR_R {
     $$ = $1;
   }
-| NT_EXPR NT_EXPR_L
+| NT_EXPR NT_EXPR_R
   {
     $$ = TFunApp($1, $2);
   }
