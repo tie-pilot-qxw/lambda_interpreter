@@ -203,6 +203,11 @@ NT_FUNC:
   {
     $$ = TFunAbs($2, $4, $6);
   }
+| TM_LET TM_IDENT TM_COLON NT_TYPE TM_DOT TM_COLON TM_ASGNOP NT_FUNC TM_IN NT_FUNC
+  {
+    $$ = TLetIn($2, $4, $8, $10);
+  }
+;
 %%
 
 void yyerror(char* s)

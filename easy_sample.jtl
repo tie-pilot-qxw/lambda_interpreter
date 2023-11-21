@@ -1,0 +1,1 @@
+(lambda f:int->int.lambda x:int.f(x+1))(let x:int. := y+y in lambda x:int. x+x)1

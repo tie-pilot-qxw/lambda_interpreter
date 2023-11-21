@@ -1,1 +1,1 @@
- (lambda  f: int->int. lambda x: int. f (x + 1)) (lambda x:int. if (x) then {x + x} else {100} ) 1
+(lambda  f: int->int. lambda x: int. f (x + 1)) (lambda x:int. if (x) then {x + x} else {100} ) 1

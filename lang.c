@@ -35,6 +35,15 @@ struct type * TPFunc(struct type * input, struct type * output) {
   return res;
 }
 
+struct expr * TLetIn(char * name, struct type * typ, struct expr * expr1, struct expr * expr2) {
+  struct expr * res = new_expr_ptr();
+  res -> t = T_LET_IN;
+  res -> d.LET_IN.typ = typ;
+  res -> d.LET_IN.name = name;
+  res -> d.LET_IN.expr1 = expr1;
+  res -> d.LET_IN.expr2 = expr2;
+}
+
 struct expr * TConstNat(unsigned int value) {
   struct expr * res = new_expr_ptr();
   res -> t = T_CONST_NAT;
@@ -195,6 +204,16 @@ void print_expr(struct expr * e) {
     print_expr(e -> d.IF_EXPR.true_exp);
     printf(",");
     print_expr(e -> d.IF_EXPR.true_exp);
+    printf(")");
+    break;
+  case T_LET_IN:
+    printf("LET(VAR(%s",e -> d.LET_IN.name);
+    printf("),");
+    print_type(e -> d.LET_IN.typ);
+    printf(",");
+    print_expr(e -> d.LET_IN.expr1);
+    printf(",");
+    print_expr(e -> d.LET_IN.expr2);
     printf(")");
     break;
   }
