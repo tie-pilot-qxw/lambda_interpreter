@@ -12,6 +12,7 @@
 unsigned int n;
 char * i;
 struct expr * e;
+struct type * t;
 void * none;
 }
 
@@ -27,6 +28,9 @@ void * none;
 %token <none> TM_LT TM_LE TM_GT TM_GE TM_EQ TM_NE
 %token <none> TM_PLUS TM_MINUS
 %token <none> TM_MUL TM_DIV TM_MOD
+%token <none> TM_IF TM_THEN TM_ELSE
+%token <none> TM_LEFT_BRACE TM_RIGHT_BRACE
+%token <none> TM_INT TM_TO TM_DOT
 
 // Nonterminals
 %type <e> NT_WHOLE
@@ -34,8 +38,11 @@ void * none;
 %type <e> NT_EXPR1
 %type <e> NT_EXPR_R
 %type <e> NT_EXPR
+%type <t> NT_TYPE0
+%type <t> NT_TYPE
+
 // Priority
-%right TM_LAMBDA
+%right TM_LAMBDA TM_COLON TM_DOT
 %nonassoc TM_ASGNOP
 %left TM_OR
 %left TM_AND
@@ -53,6 +60,28 @@ NT_WHOLE:
   {
     $$ = ($1);
     root = $$;
+  }
+;
+
+NT_TYPE0:
+  TM_LEFT_PAREN NT_TYPE TM_RIGHT_PAREN
+  {
+    $$ = ($2);
+  }
+| TM_INT
+  {
+    $$ = TPInt();
+  }
+;
+
+NT_TYPE:
+  NT_TYPE0
+  {
+    $$ = ($1);
+  }
+| NT_TYPE TM_TO NT_TYPE0
+  {
+    $$ = TPFunc($1, $3);
   }
 ;
 
@@ -144,9 +173,13 @@ NT_EXPR_R:
   {
     $$ = (TFunApp(TFunApp(TConstBinOp(T_OR), $1), $3));
   }
-| TM_LAMBDA TM_IDENT TM_COLON NT_EXPR
+| TM_LAMBDA TM_IDENT TM_COLON NT_TYPE TM_DOT NT_EXPR_R
   {
-    $$ = TFunAbs($2, $4);
+    $$ = TFunAbs($2, $4, $6);
+  }
+| TM_IF TM_LEFT_PAREN NT_EXPR TM_RIGHT_PAREN TM_THEN TM_LEFT_BRACE NT_EXPR TM_RIGHT_BRACE TM_ELSE TM_LEFT_BRACE NT_EXPR TM_RIGHT_BRACE
+  {
+    $$ = TIfExpr($3, $7, $11);
   }
 ;
 
@@ -154,7 +187,7 @@ NT_EXPR:
   NT_EXPR_R {
     $$ = $1;
   }
-| NT_EXPR NT_EXPR_R
+| NT_EXPR NT_EXPR0
   {
     $$ = TFunApp($1, $2);
   }

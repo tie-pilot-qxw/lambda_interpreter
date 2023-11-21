@@ -26,13 +26,24 @@ enum UnOpType {
   T_NOT
 };
 
+enum DataType {
+  DT_INT,
+  DT_FUNC
+};
+
+struct type {
+  enum DataType t;
+  struct {struct type * input; struct type * output; } d;
+};
+
 enum ExprType {
   T_CONST_NAT = 0,
   T_CONST_BINOP,
   T_CONST_UNOP,
   T_VAR,
   T_FUN_APP,
-  T_FUN_ABS
+  T_FUN_ABS,
+  T_IF_EXPR
 };
 
 struct expr {
@@ -43,19 +54,25 @@ struct expr {
     struct {enum UnOpType op; } CONST_UNOP;
     struct {char * name; } VAR;
     struct {struct expr * left; struct expr * right; } FUN_APP;
-    struct {char * name; struct expr * arg; } FUN_ABS;
+    struct {char * name; struct type * typ; struct expr * arg; } FUN_ABS;
+    struct {struct expr * cond; struct expr * true_exp; struct expr * false_exp; } IF_EXPR;
   } d;
 };
+
+struct type * TPInt();
+struct type * TPFunc(struct type * input, struct type * output);
 
 struct expr * TConstNat(unsigned int value);
 struct expr * TConstBinOp(enum BinOpType op);
 struct expr * TConstUnOP(enum UnOpType op);
 struct expr * TVar(char * name);
 struct expr * TFunApp(struct expr * left, struct expr * right);
-struct expr * TFunAbs(char * name, struct expr * arg);
+struct expr * TFunAbs(char * name, struct type * typ, struct expr * arg);
+struct expr * TIfExpr(struct expr * cond, struct expr * true_exp, struct expr * false_exp);
 
 void print_binop(enum BinOpType op);
 void print_expr(struct expr * e);
 void print_unop(enum UnOpType op);
+void print_type(struct type * t);
 
 #endif // LANG_H_INCLUDED

@@ -12,6 +12,29 @@ struct expr * new_expr_ptr() {
   return res;
 }
 
+struct type * new_type_ptr() {
+  struct type * res = (struct type *) malloc(sizeof(struct type));
+  if (res == NULL) {
+    printf("Failure in malloc.\n");
+    exit(0);
+  }
+  return res;
+}
+
+struct type * TPInt() {
+  struct type * res = new_type_ptr();
+  res -> t = DT_INT;
+  return res;
+}
+
+struct type * TPFunc(struct type * input, struct type * output) {
+  struct type * res = new_type_ptr();
+  res -> t = DT_FUNC;
+  res -> d.input = input;
+  res -> d.output = output;
+  return res;
+}
+
 struct expr * TConstNat(unsigned int value) {
   struct expr * res = new_expr_ptr();
   res -> t = T_CONST_NAT;
@@ -48,11 +71,21 @@ struct expr * TFunApp(struct expr * left, struct expr * right) {
   return res;
 }
 
-struct expr * TFunAbs(char * name, struct expr * arg) {
+struct expr * TFunAbs(char * name, struct type * typ, struct expr * arg) {
   struct expr * res = new_expr_ptr();
   res -> t = T_FUN_ABS;
   res -> d.FUN_ABS.name = name;
+  res -> d.FUN_ABS.typ = typ;
   res -> d.FUN_ABS.arg = arg;
+  return res;
+}
+
+struct expr * TIfExpr(struct expr * cond, struct expr * true_exp, struct expr * false_exp) {
+  struct expr * res = new_expr_ptr();
+  res -> t = T_IF_EXPR;
+  res -> d.IF_EXPR.cond = cond;
+  res -> d.IF_EXPR.true_exp = true_exp;
+  res -> d.IF_EXPR.false_exp = false_exp;
   return res;
 }
 
@@ -100,6 +133,18 @@ void print_binop(enum BinOpType op) {
   }
 }
 
+void print_type(struct type * t) {
+  if (t -> t == DT_INT) {
+    printf("TYPE(int)");
+  } else {
+    printf("TYPE(");
+    print_type(t -> d.input);
+    printf("->");
+    print_type(t -> d.output);
+    printf(")");
+  }
+}
+
 void print_unop(enum UnOpType op) {
   switch (op) {
   case T_UMINUS:
@@ -138,7 +183,18 @@ void print_expr(struct expr * e) {
     break;
   case T_FUN_ABS:
     printf("FUN_ABS(%s,", e -> d.FUN_ABS.name);
+    print_type(e -> d.FUN_ABS.typ);
+    printf(",");
     print_expr(e -> d.FUN_ABS.arg);
+    printf(")");
+    break;
+  case T_IF_EXPR:
+    printf("IF(");
+    print_expr(e -> d.IF_EXPR.cond);
+    printf(",");
+    print_expr(e -> d.IF_EXPR.true_exp);
+    printf(",");
+    print_expr(e -> d.IF_EXPR.true_exp);
     printf(")");
     break;
   }

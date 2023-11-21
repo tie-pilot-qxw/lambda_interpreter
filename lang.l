@@ -12,6 +12,38 @@
     return TM_NAT;
 }
 
+"if" {
+    return TM_IF;
+}
+
+"then" {
+    return TM_THEN;
+}
+
+"else" {
+    return TM_ELSE;
+}
+
+"{" {
+    return TM_LEFT_BRACE;
+}
+
+"}" {
+    return TM_RIGHT_BRACE;
+}
+
+"int" {
+    return TM_INT;
+}
+
+"->" {
+    return TM_TO;
+}
+
+"." {
+    return TM_DOT;
+}
+
 "lambda" {
     return TM_LAMBDA;
 }
