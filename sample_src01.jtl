@@ -1,0 +1,1 @@
+(lambda x:int. lambda y:int. if (x>y) then {x - y} else {y - x}) 1 2

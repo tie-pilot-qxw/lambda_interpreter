@@ -1,11 +1,13 @@
 #include "check.hpp"
 #include <unordered_map>
 #include <stack>
+#include <string>
 
-using std::unordered_map, std::stack;
+using std::unordered_map, std::stack, std::string;
 using std::make_pair;
 
 void DeleteType(struct type * typ) {
+    if (typ == nullptr) return; 
     if (typ -> t == DT_INT) delete typ;
     else {
         DeleteType(typ -> d.input);
@@ -35,9 +37,10 @@ bool TypeComp(const struct type * type1, const struct type * type2 ){
     return TypeComp(type1 -> d.input, type2 -> d.input) && TypeComp(type1 -> d.output, type2 -> d.output);
 }
 
-struct checkResult check(struct expr * root){
+struct checkResult check(struct expr * root, bool inner){
 
-    static unordered_map<char *, stack<struct type *> > var_table;
+    static unordered_map<string, stack<struct type *> > var_table;
+    if(!inner) var_table.clear();
 
     struct checkResult res;
     res.output = nullptr;
@@ -49,13 +52,14 @@ struct checkResult check(struct expr * root){
             return res;
         }
         case T_VAR: {
-            auto var_type = var_table.find(root -> d.VAR.name);
-            if (var_type == var_table.end()) {
+            auto var = var_table.find(string(root -> d.VAR.name));
+            if (var == var_table.end()) {
                 printf("undefined variable!\n");
                 res.success = false;
                 return res;
             }
-            res.output = CopyType(var_type -> second.top());
+            auto var_type = var -> second.top();
+            res.output = CopyType(var_type);
             res.success = true;
             return res;
         }
@@ -73,21 +77,37 @@ struct checkResult check(struct expr * root){
             return res;
         }
         case T_FUN_APP: {
-            auto func = check(root -> d.FUN_APP.left);
-            auto var = check(root -> d.FUN_APP.right);
+            auto func = check(root -> d.FUN_APP.left, true);
+            auto var = check(root -> d.FUN_APP.right, true);
 
-            if (var.input.size() == 1) {
-                var.output = TPFunc(var.input[0], var.output);
-            } else if (var.input.size() >= 2) {
-                struct type * tmp = TPFunc(var.input[0], var.input[1]);
-                for (int i = 2; i < var.input.size(); i++) {
-                    tmp = TPFunc(tmp, var.input[i]);
+            if (func.input.empty()) {
+                if (func.output != nullptr && func.output -> t == DT_FUNC) {
+                    func.input.push_back(func.output -> d.input);
+                    func.output = func.output -> d.output;
+                } else {
+                    DeleteResult(func);
+                    DeleteResult(var);
+                    res.success = false;
+                    return res;
                 }
-                var.output = TPFunc(tmp, var.output);
             }
+
+            struct type * var_type;
+            if (var.input.size() == 1) {
+                var_type = TPFunc(var.input[0], var.output);
+            } else if (var.input.size() >= 2) {
+                int n = var.input.size() - 1;
+                var_type = TPFunc(var.input[n - 1], var.input[n]);
+                for (int i = n - 2; i > 0; i--) {
+                    var_type = TPFunc(var.input[i], var_type);
+                }
+                var_type = TPFunc(var_type, var.output);
+            } else var_type = var.output;
+
+            var.input.clear();
+            var.output = var_type;
             
-            if (!func.success || !var.success || func.input.empty()
-            || !TypeComp(func.input[0], var.output)) {
+            if (!func.success || !var.success || !TypeComp(func.input[0], var.output)) {
                 DeleteResult(func);
                 DeleteResult(var);
                 res.success = false;
@@ -101,16 +121,16 @@ struct checkResult check(struct expr * root){
             return res;
         }
         case T_FUN_ABS:{
-            auto var = var_table.find(root -> d.FUN_ABS.name);
+            auto var = var_table.find(string(root -> d.FUN_ABS.name));
             if (var != var_table.end()) {
                 var -> second.push(root -> d.FUN_ABS.typ);
             } else {
                 stack<type *> tmp;
                 tmp.push(root -> d.FUN_ABS.typ);
-                var_table.insert(make_pair(root -> d.FUN_ABS.name, tmp));
+                var_table.insert(make_pair(string(root -> d.FUN_ABS.name), tmp));
             }
             
-            auto func = check(root -> d.FUN_ABS.arg);
+            auto func = check(root -> d.FUN_ABS.arg, true);
             if (!func.success) {
                 DeleteResult(func);
                 res.success = false;
@@ -122,7 +142,7 @@ struct checkResult check(struct expr * root){
             res.output = func.output;
             res.success = true;
 
-            var = var_table.find(root -> d.FUN_ABS.name);
+            var = var_table.find(string(root -> d.FUN_ABS.name));
             if(var == var_table.end()) {
                 printf("name stack error in check process");
                 exit(1);
@@ -132,9 +152,9 @@ struct checkResult check(struct expr * root){
             return res;
         }
         case T_IF_EXPR:{
-            auto cond = check(root -> d.IF_EXPR.cond);
-            auto true_expr = check(root -> d.IF_EXPR.true_exp);
-            auto false_expr = check(root -> d.IF_EXPR.false_exp);
+            auto cond = check(root -> d.IF_EXPR.cond, true);
+            auto true_expr = check(root -> d.IF_EXPR.true_exp, true);
+            auto false_expr = check(root -> d.IF_EXPR.false_exp, true);
             
             auto type_int = TPInt();
             if (!cond.success || !true_expr.success || !false_expr.success

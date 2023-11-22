@@ -16,4 +16,4 @@ void DeleteResult(struct checkResult result);
 void DeleteType(struct type * typ);
 struct type * CopyType(struct type * typ);
 
-struct checkResult check(struct expr * root);
+struct checkResult check(struct expr * root, bool inner = false);

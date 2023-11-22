@@ -25,8 +25,8 @@ lexer.o: lexer.c lexer.h parser.h lang.h
 check.o: check.cpp check.hpp lang.h
 	gcc -c -g check.cpp
 
-main.o: main.c lexer.h parser.h lang.h check.hpp
-	gcc -c -g main.c
+main.o: main.cpp lexer.h parser.h lang.h check.hpp
+	gcc -c -g main.cpp
 
 main: lang.o parser.o lexer.o lib.o main.o check.o
 	gcc -g lang.o parser.o lexer.o lib.o main.o check.o -lstdc++ -o main

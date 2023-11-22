@@ -1,7 +1,12 @@
 #include <stdio.h>
-#include "lang.h"
-#include "lexer.h"
-#include "parser.h"
+
+extern "C" {
+  #include "lang.h"
+  #include "lexer.h"
+  #include "parser.h"
+}
+
+#include "check.hpp"
 
 extern struct expr * root;
 int yyparse();
@@ -23,4 +28,13 @@ int main(int argc, char * * argv) {
   yyparse();
   fclose(yyin);
   print_expr(root);
+  printf("\n");
+  auto result = check(root);
+  if (result.success) {
+    printf("type check passed!\n");
+  } else {
+    printf("type check failed!\n");
+  }
+  DeleteResult(result);
+  return 0;
 }
