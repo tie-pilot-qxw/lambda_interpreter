@@ -80,7 +80,7 @@ NT_TYPE:
   {
     $$ = ($1);
   }
-| NT_TYPE TM_TO NT_TYPE0
+| NT_TYPE0 TM_TO NT_TYPE
   {
     $$ = TPFunc($1, $3);
   }

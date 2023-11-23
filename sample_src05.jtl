@@ -1,0 +1,1 @@
+(lambda f: (int -> int) -> int. lambda g:int -> int. lambda x: int. f(g) ) 
