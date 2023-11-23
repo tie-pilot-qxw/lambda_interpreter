@@ -1,3 +1,4 @@
+.idea/
 *.o
 main
 lexer.h
@@ -5,4 +6,5 @@ lexer.c
 parser.c
 parser.h
 parser.output
+*.exe
 .vscode
