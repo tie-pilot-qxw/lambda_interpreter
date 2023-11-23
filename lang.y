@@ -40,7 +40,7 @@ void * none;
 %type <e> NT_APPLY
 %type <t> NT_TYPE0
 %type <t> NT_TYPE
-%type <e> NT_FUNC
+%type <e> NT_DEF
 
 // Priority
 %right TM_LAMBDA TM_COLON TM_DOT TM_IN
@@ -58,7 +58,7 @@ void * none;
 %%
 
 NT_WHOLE:
-  NT_FUNC
+  NT_DEF
   {
     $$ = ($1);
     root = $$;
@@ -92,7 +92,7 @@ NT_EXPR0:
   {
     $$ = (TConstNat($1));
   }
-| TM_LEFT_PAREN NT_FUNC TM_RIGHT_PAREN
+| TM_LEFT_PAREN NT_DEF TM_RIGHT_PAREN
   {
     $$ = ($2);
   }
@@ -195,16 +195,16 @@ NT_APPLY:
   }
 ;
 
-NT_FUNC:
+NT_DEF:
   NT_EXPR {
     $$ = $1;
   }
 |
-  TM_LAMBDA TM_IDENT TM_COLON NT_TYPE TM_DOT NT_FUNC
+  TM_LAMBDA TM_IDENT TM_COLON NT_TYPE TM_DOT NT_DEF
   {
     $$ = TFunAbs($2, $4, $6);
   }
-| TM_LET TM_IDENT TM_COLON NT_TYPE TM_DOT TM_COLON TM_ASGNOP NT_FUNC TM_IN NT_FUNC
+| TM_LET TM_IDENT TM_COLON NT_TYPE TM_DOT TM_COLON TM_ASGNOP NT_DEF TM_IN NT_DEF
   {
     $$ = TLetIn($2, $4, $8, $10);
   }
