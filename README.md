@@ -11,15 +11,15 @@ lambda 表达式的解释器 这个任务中的 lambda 表达式包括 lambda �
 ## 语法树
 
 ```c
-Whole	::= Def
-Def		::= Expr | "lambda" IDENT ":" Type "." Def |
-    	"let" IDENT ":" Type "." ":=" Def "in" Def
-Expr	::= Expr1 | Expr BinOp Expr | Apply |
-    	"if" "(" Expr ")" "then" "{" Expr "}" "else" "{" Expr "}"
-Type	::= Type0 | Type0 "->" Type
-Type0	::= "(" TYpe ")" | "int"
-Expr1	::= Expr0 | "!" Expr0 | "-" Expr0
-Expr0	::= NAT | IDENT | "(" Def ")"
-BinOp	::= "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" |
-    	"==" | "!=" | "&&" | "||"
+Whole   ::= Def
+Def     ::= Expr | "lambda" IDENT ":" Type "." Def |
+        "let" IDENT ":" Type "." ":=" Def "in" Def
+Expr    ::= Expr1 | Expr BinOp Expr | Apply |
+        "if" "(" Expr ")" "then" "{" Expr "}" "else" "{" Expr "}"
+Type    ::= Type0 | Type0 "->" Type
+Type0   ::= "(" TYpe ")" | "int"
+Expr1   ::= Expr0 | "!" Expr0 | "-" Expr0
+Expr0   ::= NAT | IDENT | "(" Def ")"
+BinOp   ::= "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" |
+        "==" | "!=" | "&&" | "||"
 ```
