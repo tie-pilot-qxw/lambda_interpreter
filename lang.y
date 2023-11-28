@@ -43,8 +43,7 @@ void * none;
 %type <e> NT_DEF
 
 // Priority
-%right TM_LAMBDA TM_COLON TM_DOT TM_IN
-%left TM_LET
+%right  TM_COLON TM_DOT TM_IN
 %nonassoc TM_ASGNOP
 %left TM_OR
 %left TM_AND
