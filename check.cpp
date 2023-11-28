@@ -17,9 +17,7 @@ void DeleteType(struct type * typ) {
 }
 
 void DeleteResult(struct checkResult result) {
-    for(int i = 0; i < result.input.size(); i++) {
-        DeleteType(result.input[i]);
-    }
+    DeleteType(result.input);
     DeleteType(result.output);
 }
 
@@ -44,6 +42,7 @@ struct checkResult check(struct expr * root, bool inner){
 
     struct checkResult res;
     res.output = nullptr;
+    res.input = nullptr;
 
     switch(root -> t) {
         case T_CONST_NAT: {
@@ -64,15 +63,12 @@ struct checkResult check(struct expr * root, bool inner){
             return res;
         }
         case T_CONST_BINOP: {
-            res.input.push_back(TPInt());
-            res.input.push_back(TPInt());
-            res.output = TPInt();
+            res.output = TPFunc(TPInt(), TPFunc(TPInt(), TPInt()));
             res.success = true;
             return res;
         }
         case T_CONST_UNOP: {
-            res.input.push_back(TPInt());
-            res.output = TPInt();
+            res.output = TPFunc(TPInt(), TPInt());
             res.success = true;
             return res;
         }
@@ -80,9 +76,9 @@ struct checkResult check(struct expr * root, bool inner){
             auto func = check(root -> d.FUN_APP.left, true);
             auto var = check(root -> d.FUN_APP.right, true);
 
-            if (func.input.empty()) {
+            if (func.input == nullptr) {
                 if (func.output != nullptr && func.output -> t == DT_FUNC) {
-                    func.input.push_back(func.output -> d.input);
+                    func.input = func.output -> d.input;
                     func.output = func.output -> d.output;
                 } else {
                     DeleteResult(func);
@@ -92,32 +88,20 @@ struct checkResult check(struct expr * root, bool inner){
                 }
             }
 
-            struct type * var_type;
-            if (var.input.size() == 1) {
-                var_type = TPFunc(var.input[0], var.output);
-            } else if (var.input.size() >= 2) {
-                int n = var.input.size() - 1;
-                var_type = TPFunc(var.input[n - 1], var.input[n]);
-                for (int i = n - 2; i > 0; i--) {
-                    var_type = TPFunc(var.input[i], var_type);
-                }
-                var_type = TPFunc(var_type, var.output);
-            } else var_type = var.output;
-
-            var.input.clear();
-            var.output = var_type;
+            if (var.input != nullptr) {
+                var.output = TPFunc(var.input, var.output);
+                var.input = nullptr;
+            }
             
-            if (!func.success || !var.success || !TypeComp(func.input[0], var.output)) {
+            if (!func.success || !var.success || !TypeComp(func.input, var.output)) {
                 DeleteResult(func);
                 DeleteResult(var);
                 res.success = false;
                 return res;
             }
-            res.input = func.input;
-            DeleteType(res.input[0]);
-            res.input.pop_front();
-            res.output = func.output;
-            res.success = true;
+            res = func;
+            DeleteType(res.input);
+            res.input = nullptr;
             return res;
         }
         case T_FUN_ABS:{
@@ -137,9 +121,12 @@ struct checkResult check(struct expr * root, bool inner){
                 return res;
             }
 
-            res.input = func.input;
-            res.input.push_front(CopyType(root -> d.FUN_ABS.typ));
-            res.output = func.output;
+            if (func.input != nullptr) {
+                res.output = TPFunc(func.input, func.output);
+            } else {
+                res.output = func.output;
+            }
+            res.input = CopyType(root -> d.FUN_ABS.typ);
             res.success = true;
 
             var = var_table.find(string(root -> d.FUN_ABS.name));
@@ -155,12 +142,24 @@ struct checkResult check(struct expr * root, bool inner){
             auto cond = check(root -> d.IF_EXPR.cond, true);
             auto true_expr = check(root -> d.IF_EXPR.true_exp, true);
             auto false_expr = check(root -> d.IF_EXPR.false_exp, true);
-            
+
+            if (cond.input != nullptr) {
+                cond.output = TPFunc(cond.input, cond.output);
+                cond.input = nullptr;
+            }
+            if (true_expr.input != nullptr) {
+                true_expr.output = TPFunc(true_expr.input, true_expr.output);
+                true_expr.input = nullptr;
+            }
+            if (false_expr.input != nullptr) {
+                false_expr.output = TPFunc(false_expr.input, false_expr.output);
+                false_expr.input = nullptr;
+            }
+
             auto type_int = TPInt();
             if (!cond.success || !true_expr.success || !false_expr.success
-            || !cond.input.empty() || !TypeComp(cond.output, type_int)
-            || !TypeComp(true_expr.output, false_expr.output)
-            || true_expr.input.size() != false_expr.input.size()) {
+            || !TypeComp(cond.output, type_int) || !TypeComp(true_expr.output, false_expr.output)) {
+                DeleteType(type_int);
                 DeleteResult(cond);
                 DeleteResult(true_expr);
                 DeleteResult(false_expr);
@@ -168,16 +167,6 @@ struct checkResult check(struct expr * root, bool inner){
                 return res;
             }
             DeleteType(type_int);
-            
-            for (int i = 0; i < true_expr.input.size(); i++) {
-                if (!TypeComp(true_expr.input[i], false_expr.input[i])){
-                    DeleteResult(cond);
-                    DeleteResult(true_expr);
-                    DeleteResult(false_expr);
-                    res.success = false;
-                    return res;
-                }
-            }
             
             res = true_expr;
             return res;

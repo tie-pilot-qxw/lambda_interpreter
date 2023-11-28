@@ -1,14 +1,11 @@
 #pragma once
 
-#include <deque>
-using std::deque;
-
 extern "C"{
     #include "lang.h"
 }
 
 
-struct checkResult { deque<struct type *> input; struct type * output; bool success; };
+struct checkResult { struct type * input; struct type * output; bool success; };
 
 bool TypeComp(const struct type * type1, const struct type * type2 );
 
