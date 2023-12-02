@@ -5,11 +5,10 @@ extern "C"{
 }
 
 
-struct checkResult { struct type * input; struct type * output; bool success; };
+struct checkResult { struct type * t; bool success; };
 
 bool TypeComp(const struct type * type1, const struct type * type2 );
 
-void DeleteResult(struct checkResult result);
 void DeleteType(struct type * typ);
 struct type * CopyType(struct type * typ);
 

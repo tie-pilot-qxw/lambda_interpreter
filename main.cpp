@@ -35,6 +35,6 @@ int main(int argc, char * * argv) {
   } else {
     printf("type check failed!\n");
   }
-  DeleteResult(result);
+  DeleteType(result.t);
   return 0;
 }

@@ -14,11 +14,7 @@ void DeleteType(struct type * typ) {
         DeleteType(typ -> d.output);
         delete typ;
     }
-}
-
-void DeleteResult(struct checkResult result) {
-    DeleteType(result.input);
-    DeleteType(result.output);
+    typ = nullptr;
 }
 
 struct type * CopyType(struct type * typ) {
@@ -30,6 +26,7 @@ struct type * CopyType(struct type * typ) {
 }
 
 bool TypeComp(const struct type * type1, const struct type * type2 ){
+    if (type1 == nullptr || type2 == nullptr) return false;
     if (type1 -> t != type2 -> t) return false;
     if (type1 -> t == DT_INT) return true;
     return TypeComp(type1 -> d.input, type2 -> d.input) && TypeComp(type1 -> d.output, type2 -> d.output);
@@ -41,12 +38,12 @@ struct checkResult check(struct expr * root, bool inner){
     if(!inner) var_table.clear();
 
     struct checkResult res;
-    res.output = nullptr;
-    res.input = nullptr;
+    res.t = nullptr;
+    res.success = false;
 
     switch(root -> t) {
         case T_CONST_NAT: {
-            res.output = TPInt();
+            res.t = TPInt();
             res.success = true;
             return res;
         }
@@ -54,21 +51,20 @@ struct checkResult check(struct expr * root, bool inner){
             auto var = var_table.find(string(root -> d.VAR.name));
             if (var == var_table.end()) {
                 printf("undefined variable!\n");
-                res.success = false;
                 return res;
             }
             auto var_type = var -> second.top();
-            res.output = CopyType(var_type);
+            res.t = CopyType(var_type);
             res.success = true;
             return res;
         }
         case T_CONST_BINOP: {
-            res.output = TPFunc(TPInt(), TPFunc(TPInt(), TPInt()));
+            res.t = TPFunc(TPInt(), TPFunc(TPInt(), TPInt()));
             res.success = true;
             return res;
         }
         case T_CONST_UNOP: {
-            res.output = TPFunc(TPInt(), TPInt());
+            res.t = TPFunc(TPInt(), TPInt());
             res.success = true;
             return res;
         }
@@ -76,32 +72,22 @@ struct checkResult check(struct expr * root, bool inner){
             auto func = check(root -> d.FUN_APP.left, true);
             auto var = check(root -> d.FUN_APP.right, true);
 
-            if (func.input == nullptr) {
-                if (func.output != nullptr && func.output -> t == DT_FUNC) {
-                    func.input = func.output -> d.input;
-                    func.output = func.output -> d.output;
-                } else {
-                    DeleteResult(func);
-                    DeleteResult(var);
-                    res.success = false;
-                    return res;
-                }
-            }
-
-            if (var.input != nullptr) {
-                var.output = TPFunc(var.input, var.output);
-                var.input = nullptr;
-            }
-            
-            if (!func.success || !var.success || !TypeComp(func.input, var.output)) {
-                DeleteResult(func);
-                DeleteResult(var);
-                res.success = false;
+            if (func.t == nullptr || func.t -> t == DT_INT) {
+                DeleteType(func.t);
+                DeleteType(var.t);
                 return res;
             }
-            res = func;
-            DeleteType(res.input);
-            res.input = nullptr;
+            
+            if (!func.success || !var.success || !TypeComp(func.t -> d.input, var.t)) {
+                DeleteType(func.t);
+                DeleteType(var.t);
+                return res;
+            }
+
+            DeleteType(var.t);
+            DeleteType(func.t -> d.input);
+            res.t = func.t -> d.output;
+            res.success = true;
             return res;
         }
         case T_FUN_ABS:{
@@ -116,17 +102,11 @@ struct checkResult check(struct expr * root, bool inner){
             
             auto func = check(root -> d.FUN_ABS.arg, true);
             if (!func.success) {
-                DeleteResult(func);
-                res.success = false;
+                DeleteType(func.t);
                 return res;
             }
 
-            if (func.input != nullptr) {
-                res.output = TPFunc(func.input, func.output);
-            } else {
-                res.output = func.output;
-            }
-            res.input = CopyType(root -> d.FUN_ABS.typ);
+            res.t = TPFunc(CopyType(root -> d.FUN_ABS.typ), func.t);
             res.success = true;
 
             var = var_table.find(string(root -> d.FUN_ABS.name));
@@ -143,30 +123,18 @@ struct checkResult check(struct expr * root, bool inner){
             auto true_expr = check(root -> d.IF_EXPR.true_exp, true);
             auto false_expr = check(root -> d.IF_EXPR.false_exp, true);
 
-            if (cond.input != nullptr) {
-                cond.output = TPFunc(cond.input, cond.output);
-                cond.input = nullptr;
-            }
-            if (true_expr.input != nullptr) {
-                true_expr.output = TPFunc(true_expr.input, true_expr.output);
-                true_expr.input = nullptr;
-            }
-            if (false_expr.input != nullptr) {
-                false_expr.output = TPFunc(false_expr.input, false_expr.output);
-                false_expr.input = nullptr;
-            }
-
             auto type_int = TPInt();
             if (!cond.success || !true_expr.success || !false_expr.success
-            || !TypeComp(cond.output, type_int) || !TypeComp(true_expr.output, false_expr.output)) {
+            || !TypeComp(cond.t, type_int) || !TypeComp(true_expr.t, false_expr.t)) {
                 DeleteType(type_int);
-                DeleteResult(cond);
-                DeleteResult(true_expr);
-                DeleteResult(false_expr);
-                res.success = false;
+                DeleteType(cond.t);
+                DeleteType(true_expr.t);
+                DeleteType(false_expr.t);
                 return res;
             }
             DeleteType(type_int);
+            DeleteType(cond.t);
+            DeleteType(false_expr.t);
             
             res = true_expr;
             return res;
