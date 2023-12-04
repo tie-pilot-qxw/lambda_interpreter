@@ -203,7 +203,7 @@ void print_expr(struct expr * e) {
     printf(",");
     print_expr(e -> d.IF_EXPR.true_exp);
     printf(",");
-    print_expr(e -> d.IF_EXPR.true_exp);
+    print_expr(e -> d.IF_EXPR.false_exp);
     printf(")");
     break;
   case T_LET_IN:

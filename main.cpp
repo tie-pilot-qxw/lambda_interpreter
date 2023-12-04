@@ -7,6 +7,7 @@ extern "C" {
 }
 
 #include "check.hpp"
+#include "interpreter.hpp"
 
 extern struct expr * root;
 int yyparse();
@@ -32,9 +33,12 @@ int main(int argc, char * * argv) {
   auto result = check(root);
   if (result.success) {
     printf("type check passed!\n");
+    simpl(root);
+    print_expr(root);
   } else {
     printf("type check failed!\n");
   }
   DeleteType(result.t);
+  DeleteExpr(root);
   return 0;
 }
