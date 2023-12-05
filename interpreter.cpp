@@ -102,7 +102,6 @@ interResult simpl (expr * &root) {
             return res;
         }
         case T_FUN_ABS:{
-            simpl(root -> d.FUN_ABS.arg);
             res.type = RT_ABS;
             res.info.ABS.name = root -> d.FUN_ABS.name;
             return res;

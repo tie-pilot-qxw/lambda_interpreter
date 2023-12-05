@@ -1,0 +1,1 @@
+(lambda f:int -> int -> int. lambda x: int. lambda y:int. (f (y))(x)) (lambda x: int. lambda y: int. x - y) 1 2

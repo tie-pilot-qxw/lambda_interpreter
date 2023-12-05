@@ -1,0 +1,25 @@
+(lambda x: x * x)2
+(lambda x: x - y) 2 3
+(lambda f: lambda x: f (f x)) (lambda x: x * 2) 1
+(lambda f: lambda x: f (x +1)) (lambda x: x + x) 1
+(lambda f:(int->int)->(int->int). lambda x:int->int. f (f (f x))) (lambda f:int->int. lambda x:int. f (f (f x))) (lambda x:int. x + 1) 0
+(lambda f: lambda x: f (f (f x))) ((lambda f: lambda x: f (f (f x))) (lambda x: x + 1))  0
+(lambda x: (lambda f: lambda x: f (f (f x))) (lambda y: x + y) 1) 2
+(lambda x : lambda y : y + 1) ((lambda x: x x) (lambda x: x x)) 1 // 无法推断类型，不用管
+(lambda x: x x) (lambda x: x) 3 // 标注不了类型
+(lambda b1: lambda b2: (lambda l: lambda m: lambda n: l m n) b1 b2 (lambda t: lambda f: f)) (lambda t: lambda f: t) (lambda t: lambda f: f)
+
+
+
+
+
+4
+Error
+4
+4
+27 
+9
+7
+Crash
+3
+Non-integer value
