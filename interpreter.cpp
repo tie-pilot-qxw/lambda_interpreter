@@ -129,6 +129,9 @@ interResult simpl (expr * &root) {
             }
             return res;
         }
+        case T_LET_IN:{
+
+        }
         default: exit(1);
     }
 }
@@ -158,6 +161,9 @@ void substitute (expr * &func, expr * var, char * name) {
             substitute(func -> d.IF_EXPR.true_exp, var, name);
             substitute(func -> d.IF_EXPR.false_exp, var, name);
             break;
+        }
+        case T_LET_IN:{
+            
         }
         default: break;
     }
@@ -238,6 +244,14 @@ expr * CopyExpr(expr * root) {
             auto true_expr = CopyExpr(root -> d.IF_EXPR.true_exp);
             auto false_expr = CopyExpr(root -> d.IF_EXPR.false_exp);
             return TIfExpr(cond, true_expr, false_expr);
+        }
+        case T_LET_IN:{
+            char * name = new char[strlen(root -> d.LET_IN.name) + 1];
+            strcpy(name, root -> d.LET_IN.name);
+            auto typ = CopyType(root -> d.LET_IN.typ);
+            auto substi = CopyExpr(root -> d.LET_IN.expr1);
+            auto domain = CopyExpr(root -> d.LET_IN.expr2);
+            return TLetIn(name, typ, substi, domain);
         }
         default: exit(1);
     }

@@ -1,1 +1,1 @@
-let f:int. :=1 in lambda  f: int->int. lambda x: int. f (x + 1)
+let x:int. :=1 in (lambda x:int->int. x) (lambda x : int. x) x

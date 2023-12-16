@@ -42,8 +42,6 @@ struct checkResult check(struct expr * root, bool inner){
     res.t = nullptr;
     res.success = false;
 
-    bool in_let = false;
-    static int dbg = 0;
     switch(root -> t) {
         case T_CONST_NAT: {
             res.t = TPInt();
@@ -96,12 +94,6 @@ struct checkResult check(struct expr * root, bool inner){
         case T_FUN_ABS:{
             auto var = var_table.find(string(root -> d.FUN_ABS.name));
             if (var != var_table.end()) {
-                if(in_let&&var->second.size()>0){
-                    auto pre = var -> second.top();
-                    if(!TypeComp(pre,root -> d.FUN_ABS.typ)){
-                        return res;
-                    }
-                }
                 var -> second.push(root -> d.FUN_ABS.typ);
             } else {
                 stack<type *> tmp;
@@ -149,14 +141,15 @@ struct checkResult check(struct expr * root, bool inner){
             return res;
         }
         case T_LET_IN:{
-            in_let = true;
             auto var = var_table.find(string(root -> d.LET_IN.name));
             if (var != var_table.end()) {
-                var -> second.push(root -> d.LET_IN.typ);
-                auto pre = var -> second.top();
-                if (!TypeComp(pre,root -> d.LET_IN.typ)){
-                return res;
-            }
+                if(var -> second.size() > 0){
+                    auto pre = var -> second.top();
+                    var -> second.push(root -> d.LET_IN.typ);
+                    if (!TypeComp(pre,root -> d.LET_IN.typ)){
+                    return res;
+                    }
+                }
             } else {
                 stack<type *> tmp;
                 tmp.push(root -> d.LET_IN.typ);
