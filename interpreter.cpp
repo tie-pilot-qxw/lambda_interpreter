@@ -163,7 +163,11 @@ void substitute (expr * &func, expr * var, char * name) {
             break;
         }
         case T_LET_IN:{
-            
+            substitute(func -> d.LET_IN.expr1, var, name);
+            if (strcmp(name, func -> d.LET_IN.name) != 0) {
+                substitute(func -> d.LET_IN.expr2, var, name);
+            }
+            break;
         }
         default: break;
     }

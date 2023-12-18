@@ -143,13 +143,6 @@ struct checkResult check(struct expr * root, bool inner){
         case T_LET_IN:{
             auto var = var_table.find(string(root -> d.LET_IN.name));
             if (var != var_table.end()) {
-                // if(var -> second.size() > 0){
-                //     auto pre = var -> second.top();
-                //     var -> second.push(root -> d.LET_IN.typ);
-                //     if (!TypeComp(pre,root -> d.LET_IN.typ)){
-                //     return res;
-                //     }
-                // }
                 var -> second.push(root -> d.LET_IN.typ);
             } else {
                 stack<type *> tmp;
