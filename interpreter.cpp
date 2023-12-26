@@ -130,7 +130,15 @@ interResult simpl (expr * &root) {
             return res;
         }
         case T_LET_IN:{
-
+            auto substi = root -> d.LET_IN.expr1;
+            auto domain = root -> d.LET_IN.expr2;
+            substitute(domain, substi, root -> d.LET_IN.name);
+            delete [] root -> d.LET_IN.name;
+            DeleteType(root -> d.LET_IN.typ);
+            DeleteExpr(root -> d.LET_IN.expr1);
+            delete root;
+            root = domain;
+            return simpl(root);
         }
         default: exit(1);
     }
