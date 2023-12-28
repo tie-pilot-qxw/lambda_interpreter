@@ -141,6 +141,7 @@ struct checkResult check(struct expr * root, bool inner){
             return res;
         }
         case T_LET_IN:{
+            auto substi = check(root -> d.LET_IN.expr1,true);
             auto var = var_table.find(string(root -> d.LET_IN.name));
             if (var != var_table.end()) {
                 var -> second.push(root -> d.LET_IN.typ);
@@ -150,7 +151,6 @@ struct checkResult check(struct expr * root, bool inner){
                 var_table.insert(make_pair(string(root -> d.LET_IN.name), tmp));
             }
             
-            auto substi = check(root -> d.LET_IN.expr1,true);
             auto domain = check(root -> d.LET_IN.expr2,true);
             
             if (!substi.success || !domain.success || !TypeComp(substi.t,root -> d.LET_IN.typ)){
